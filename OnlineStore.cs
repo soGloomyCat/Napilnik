@@ -99,9 +99,12 @@ namespace OnlineStore
             }
         }
 
-        public void PlaceOrder()
+        public void PlaceOrder(string paylink)
         {
-            Console.Write("Заказ оформлен. Номер заказа: ");
+            if (!CheckCartFullness())
+                return;
+
+            Console.Write($"Заказ оформлен. Номер заказа: {paylink}");
             _goods = new List<GoodCell>();
         }
 
@@ -241,12 +244,7 @@ namespace OnlineStore
 
                             break;
                         case 5:
-                            if (_cart.CheckCartFullness())
-                            {
-                                _cart.PlaceOrder();
-                                Console.WriteLine(_terminal.GeneratePaylink());
-                            }
-
+                            _cart.PlaceOrder(_terminal.GeneratePaylink());
                             break;
                         default:
                             Console.WriteLine("Номер команды не распознан.");
