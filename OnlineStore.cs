@@ -116,7 +116,7 @@ namespace OnlineStore
         {
             if (Fullness == 0)
             {
-                MessageRequired.Invoke();
+                MessageRequired?.Invoke();
                 return false;
             }
 
@@ -181,7 +181,7 @@ namespace OnlineStore
         {
             if (Fullness == 0)
             {
-                MessageRequired.Invoke();
+                MessageRequired?.Invoke();
                 return false;
             }
 
