@@ -60,10 +60,14 @@ namespace OnlineStore
         private List<GoodCell> _goods;
 
         public IReadOnlyList<IReadOnlyCell> GoodCells => _goods;
+        public int Fullness => _goods.Count;
+
+        public event Action MessageRequired;
 
         public Cart()
         {
             _goods = new List<GoodCell>();
+            MessageRequired += OutputMessage;
         }
 
         public void TakeGood(GoodCell goodCell, int count)
@@ -104,19 +108,24 @@ namespace OnlineStore
             if (!CheckCartFullness())
                 return;
 
-            Console.Write($"Заказ оформлен. Номер заказа: {paylink}");
+            Console.Write($"Заказ оформлен. Номер заказа: {paylink}\n");
             _goods = new List<GoodCell>();
         }
 
         public bool CheckCartFullness()
         {
-            if (_goods.Count == 0)
+            if (Fullness == 0)
             {
-                Console.WriteLine("Корзина пуста.");
+                MessageRequired.Invoke();
                 return false;
             }
 
             return true;
+        }
+
+        private void OutputMessage()
+        {
+            Console.WriteLine("Корзина пуста.");
         }
     }
 
@@ -124,12 +133,15 @@ namespace OnlineStore
     {
         private List<GoodCell> _goodCells;
 
-        public int Fulness => _goodCells.Count;
+        public int Fullness => _goodCells.Count;
         public IReadOnlyList<IReadOnlyCell> GoodCells => _goodCells;
+
+        public event Action MessageRequired;
 
         public Warehouse()
         {
             _goodCells = new List<GoodCell>();
+            MessageRequired += OutputMessage;
         }
 
         public void AddGood(string label, int count)
@@ -167,13 +179,18 @@ namespace OnlineStore
 
         public bool CheckWarehouseFullness()
         {
-            if (_goodCells.Count == 0)
+            if (Fullness == 0)
             {
-                Console.WriteLine("Склад пуст.");
+                MessageRequired.Invoke();
                 return false;
             }
 
             return true;
+        }
+
+        private void OutputMessage()
+        {
+            Console.WriteLine("Склад пуст.");
         }
     }
 
@@ -312,7 +329,7 @@ namespace OnlineStore
             _terminal.ShowStock(_warehouse.GoodCells);
             Console.Write("Номер позиции: ");
 
-            if (!int.TryParse(Console.ReadLine(), out userInput) || userInput > _warehouse.Fulness)
+            if (!int.TryParse(Console.ReadLine(), out userInput) || userInput > _warehouse.Fullness)
             {
                 Console.WriteLine("Указано некорректное значение.");
                 return;
