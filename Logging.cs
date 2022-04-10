@@ -3,7 +3,7 @@ using System.IO;
 
 namespace Logging
 {
-    class Program
+    class Logging
     {
         static void Main(string[] args)
         {
