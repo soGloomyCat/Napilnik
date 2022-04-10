@@ -1,4 +1,6 @@
-﻿namespace Weapon
+﻿using System;
+
+namespace Weapon
 {
     class Weapon
     {
@@ -6,9 +8,32 @@
 
         public int Damage { get; }
 
-        public void Fire()
+        public void TryShoot()
+        {
+            if (CheckAmmo())
+                Fire();
+            else
+                Reload();
+        }
+
+        private void Fire()
         {
             _bullets--;
+        }
+
+        private bool CheckAmmo()
+        {
+            if (_bullets > 0)
+                return true;
+            else
+                return false;
+        }
+
+        private void Reload()
+        {
+            Console.WriteLine("Оружие перезаряжается.");
+            Console.WriteLine("Оружие перезаряжено.");
+            Fire();
         }
     }
 
@@ -16,9 +41,24 @@
     {
         private int _health;
 
+        private bool _isKilled => CheckDead();
+
+        public event Action IsDead;
+
         public void TakeDamage(int damage)
         {
             _health -= damage;
+
+            if (_isKilled)
+                IsDead?.Invoke();
+        }
+
+        private bool CheckDead()
+        {
+            if (_health <= 0)
+                return true;
+            else
+                return false;
         }
     }
 
@@ -28,7 +68,7 @@
 
         public void OnSeePlayer(Player player)
         {
-            _weapon.Fire();
+            _weapon.TryShoot();
             player.TakeDamage(_weapon.Damage);
         }
     }
