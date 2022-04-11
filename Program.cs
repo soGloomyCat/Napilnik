@@ -50,7 +50,7 @@ namespace PaymentSystem
 
             hashCode = MD5.Create();
 
-            return string.Concat(hashCode.ComputeHash(BitConverter.GetBytes(orderId)).Select(x => x.ToString("X")));
+            return string.Concat(hashCode.ComputeHash(BitConverter.GetBytes(orderId)).Select(symbol => symbol.ToString("X")));
         }
 
         private string GenerateCode(int orderId, int orderAmount)
@@ -61,7 +61,7 @@ namespace PaymentSystem
 
             hashCode = MD5.Create();
             convertedHashCode = string.Concat(hashCode.ComputeHash(BitConverter.GetBytes(orderId)).Select(x => x.ToString("X")));
-            convertedAmount = string.Concat(BitConverter.GetBytes(orderAmount).Select(x => x.ToString("X")));
+            convertedAmount = string.Concat(BitConverter.GetBytes(orderAmount).Select(symbol => symbol.ToString("X")));
 
             return string.Concat(convertedHashCode, convertedAmount);
         }
@@ -76,7 +76,7 @@ namespace PaymentSystem
             hashCode = SHA1.Create();
             convertedHashCode = string.Concat(hashCode.ComputeHash(BitConverter.GetBytes(orderAmount)).Select(x => x.ToString("X")));
             convertedId = string.Concat(BitConverter.GetBytes(orderId).Select(x => x.ToString("X")));
-            convertedCode = string.Concat(BitConverter.GetBytes(secureCode).Select(x => x.ToString("X")));
+            convertedCode = string.Concat(BitConverter.GetBytes(secureCode).Select(symbol => symbol.ToString("X")));
 
             return string.Concat(convertedHashCode, convertedId, convertedCode);
         }
