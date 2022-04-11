@@ -7,26 +7,14 @@ namespace Weapon
         private int _bullets;
 
         public int Damage { get; }
+        public bool IsEmpty => _bullets <= 0;
 
-        public void TryShoot()
+        public void Fire()
         {
-            if (CheckAmmo())
-                Fire();
-            else
+            if (IsEmpty)
                 Reload();
-        }
-
-        private void Fire()
-        {
-            _bullets--;
-        }
-
-        private bool CheckAmmo()
-        {
-            if (_bullets > 0)
-                return true;
             else
-                return false;
+                _bullets--;
         }
 
         private void Reload()
@@ -41,24 +29,16 @@ namespace Weapon
     {
         private int _health;
 
-        private bool _isKilled => CheckDead();
+        public bool IsKilled => _health <= 0;
 
-        public event Action IsDead;
+        public event Action Dead;
 
         public void TakeDamage(int damage)
         {
             _health -= damage;
 
-            if (_isKilled)
-                IsDead?.Invoke();
-        }
-
-        private bool CheckDead()
-        {
-            if (_health <= 0)
-                return true;
-            else
-                return false;
+            if (IsKilled)
+                Dead?.Invoke();
         }
     }
 
@@ -68,7 +48,7 @@ namespace Weapon
 
         public void OnSeePlayer(Player player)
         {
-            _weapon.TryShoot();
+            _weapon.Fire();
             player.TakeDamage(_weapon.Damage);
         }
     }
