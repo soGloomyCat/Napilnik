@@ -42,7 +42,7 @@ namespace Logging
         private string _message;
 
         public string Message => _message;
-        public bool IsNeedDay => CheckDayOfTheWeek();
+        public bool IsNeedDay => DateTime.Now.DayOfWeek == DayOfWeek.Friday;
 
         public LogWritter()
         {
@@ -56,14 +56,6 @@ namespace Logging
         protected void OutputInformationalMessage()
         {
             Console.WriteLine("Лог не сгенерирован, т.к. генерация производится в другой день.");
-        }
-
-        private bool CheckDayOfTheWeek()
-        {
-            if (DateTime.Now.DayOfWeek == DayOfWeek.Friday)
-                return true;
-            else
-                return false;
         }
 
         private string GetMessage()
