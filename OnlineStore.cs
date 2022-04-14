@@ -58,16 +58,15 @@ namespace OnlineStore
     class Cart
     {
         private List<GoodCell> _goods;
+        private bool _isActive;
 
         public IReadOnlyList<IReadOnlyCell> GoodCells => _goods;
         public int Fullness => _goods.Count;
 
-        public event Action MessageRequired;
-
         public Cart()
         {
             _goods = new List<GoodCell>();
-            MessageRequired += OutputMessage;
+            _isActive = false;
         }
 
         public void TakeGood(GoodCell goodCell, int count)
@@ -93,7 +92,7 @@ namespace OnlineStore
 
             currentIndex = 1;
 
-            if (!CheckCartFullness())
+            if (!CheckFullness())
                 return;
 
             foreach (var cell in _goods)
@@ -103,29 +102,26 @@ namespace OnlineStore
             }
         }
 
-        public void PlaceOrder(string paylink)
+        public void Order(string paylink)
         {
-            if (!CheckCartFullness())
+            if (!CheckFullness())
                 return;
 
             Console.Write($"Заказ оформлен. Номер заказа: {paylink}\n");
             _goods = new List<GoodCell>();
         }
 
-        public bool CheckCartFullness()
+        public bool CheckFullness()
         {
             if (Fullness == 0)
-            {
-                MessageRequired?.Invoke();
                 return false;
-            }
 
             return true;
         }
 
-        private void OutputMessage()
+        public void Activate()
         {
-            Console.WriteLine("Корзина пуста.");
+            _isActive = true;
         }
     }
 
@@ -136,15 +132,12 @@ namespace OnlineStore
         public int Fullness => _goodCells.Count;
         public IReadOnlyList<IReadOnlyCell> GoodCells => _goodCells;
 
-        public event Action MessageRequired;
-
         public Warehouse()
         {
             _goodCells = new List<GoodCell>();
-            MessageRequired += OutputMessage;
         }
 
-        public void AddGood(string label, int count)
+        public void Delive(string label, int count)
         {
             GoodCell tempCell;
 
@@ -163,7 +156,7 @@ namespace OnlineStore
 
         public void ShowAssortment()
         {
-            if (!CheckWarehouseFullness())
+            if (!CheckFullness())
                 return;
         }
 
@@ -177,25 +170,32 @@ namespace OnlineStore
             _goodCells[cellIndex].DecreaseCount(count);
         }
 
-        public bool CheckWarehouseFullness()
+        public bool CheckFullness()
         {
             if (Fullness == 0)
-            {
-                MessageRequired?.Invoke();
                 return false;
-            }
 
             return true;
-        }
-
-        private void OutputMessage()
-        {
-            Console.WriteLine("Склад пуст.");
         }
     }
 
     class InformationOutputTerminal
     {
+        private int _firstCartErrorIndex;
+        private int _secondCartErrorIndex;
+        private int _firstWarehouseErrorIndex;
+
+        public int FirstCartErrorIndex => _firstCartErrorIndex;
+        public int SecondCartErrorIndex => _secondCartErrorIndex;
+        public int FirstWarehouseErrorIndex => _firstWarehouseErrorIndex;
+
+        public InformationOutputTerminal()
+        {
+            _firstCartErrorIndex = 1;
+            _secondCartErrorIndex = 2;
+            _firstWarehouseErrorIndex = 3;
+        }
+
         public void ShowStock(IReadOnlyList<IReadOnlyCell> GoodCells)
         {
             int currentIndex;
@@ -216,6 +216,24 @@ namespace OnlineStore
             randomNumber = new Random();
             return randomNumber.Next(0, int.MaxValue).ToString();
         }
+
+        public void OutputErrorMessage(int indexError)
+        {
+            switch (indexError)
+            {
+                case 1:
+                    Console.WriteLine("Для начала, вам нужно взять корзину.");
+                    break;
+                case 2:
+                    Console.WriteLine("Корзина пуста.");
+                    break;
+                case 3:
+                    Console.WriteLine("Склад пуст.");
+                    break;
+                default:
+                    break;
+            }
+        }
     }
 
     class Store
@@ -227,7 +245,6 @@ namespace OnlineStore
         public Store(Warehouse warehouse)
         {
             _warehouse = warehouse;
-            _cart = new Cart();
             _terminal = new InformationOutputTerminal();
         }
 
@@ -237,7 +254,7 @@ namespace OnlineStore
 
             while (true)
             {
-                Console.WriteLine("1. Заказать товар на склад;\n2. Просмотреть товар на складе;\n3. Добавить в корзину;\n4. Просмотреть товар в корзине;\n5. Оформить заказ;");
+                Console.WriteLine("1. Заказать товар на склад;\n2. Просмотреть товар на складе;\n3. Добавить в корзину;\n4. Просмотреть товар в корзине;\n5. Оформить заказ;\n6. Взять корзину");
                 Console.Write("Введите номер команды: ");
 
                 if (int.TryParse(Console.ReadLine(), out userInput))
@@ -248,20 +265,26 @@ namespace OnlineStore
                             OrderGood();
                             break;
                         case 2:
-                            if (_warehouse.CheckWarehouseFullness())
+                            if (CheckFulness(_warehouse))
                                 _terminal.ShowStock(_warehouse.GoodCells);
 
                             break;
                         case 3:
-                            AddGoodToCart();
+                            if (CheckPresenceCart() && CheckFulness(_cart))
+                                AddGoodToCart();
+
                             break;
                         case 4:
-                            if (_cart.CheckCartFullness())
+                            if (CheckPresenceCart() && CheckFulness(_cart))
                                 _terminal.ShowStock(_cart.GoodCells);
 
                             break;
                         case 5:
-                            _cart.PlaceOrder(_terminal.GeneratePaylink());
+                            if (CheckPresenceCart() && CheckFulness(_cart))
+                                _cart.Order(_terminal.GeneratePaylink());
+                            break;
+                        case 6:
+                            _cart = Cart();
                             break;
                         default:
                             Console.WriteLine("Номер команды не распознан.");
@@ -279,6 +302,14 @@ namespace OnlineStore
             }
         }
 
+        private Cart Cart()
+        {
+            Cart tempCart = new Cart();
+            tempCart.Activate();
+            Console.WriteLine("Вы взяли корзину.");
+            return tempCart;
+        }
+
         private void OrderGood()
         {
             string tempLabel;
@@ -294,7 +325,7 @@ namespace OnlineStore
                 return;
             }
 
-            _warehouse.AddGood(tempLabel, tempCount);
+            _warehouse.Delive(tempLabel, tempCount);
         }
 
         private bool TryParseUserInput(out int currentValue)
@@ -323,7 +354,7 @@ namespace OnlineStore
             int userInput;
             int goodsCount;
 
-            if (!_warehouse.CheckWarehouseFullness())
+            if (!_warehouse.CheckFullness())
                 return;
 
             _terminal.ShowStock(_warehouse.GoodCells);
@@ -351,6 +382,36 @@ namespace OnlineStore
 
             _cart.TakeGood(_warehouse.TakeCell(userInput), goodsCount);
             _warehouse.ChangeCount(userInput, goodsCount);
+        }
+
+        private bool CheckFulness(Warehouse warehouse)
+        {
+            if (warehouse.CheckFullness())
+                return true;
+            else
+                _terminal.OutputErrorMessage(_terminal.FirstWarehouseErrorIndex);
+
+            return false;
+        }
+
+        private bool CheckFulness(Cart cart)
+        {
+            if (_cart.CheckFullness())
+                return true;
+            else
+                _terminal.OutputErrorMessage(_terminal.SecondCartErrorIndex);
+
+            return false;
+        }
+
+        private bool CheckPresenceCart()
+        {
+            if (_cart != null)
+                return true;
+            else
+                _terminal.OutputErrorMessage(_terminal.FirstCartErrorIndex);
+
+            return false;
         }
     }
 
