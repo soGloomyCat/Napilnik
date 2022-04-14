@@ -181,20 +181,13 @@ namespace OnlineStore
 
     class InformationOutputTerminal
     {
-        private int _firstCartErrorIndex;
-        private int _secondCartErrorIndex;
-        private int _firstWarehouseErrorIndex;
+        private const int _firstCartErrorIndex = 1;
+        private const int _secondCartErrorIndex = 2;
+        private const int _firstWarehouseErrorIndex = 3;
 
         public int FirstCartErrorIndex => _firstCartErrorIndex;
         public int SecondCartErrorIndex => _secondCartErrorIndex;
         public int FirstWarehouseErrorIndex => _firstWarehouseErrorIndex;
-
-        public InformationOutputTerminal()
-        {
-            _firstCartErrorIndex = 1;
-            _secondCartErrorIndex = 2;
-            _firstWarehouseErrorIndex = 3;
-        }
 
         public void ShowStock(IReadOnlyList<IReadOnlyCell> GoodCells)
         {
